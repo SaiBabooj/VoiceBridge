@@ -29,6 +29,14 @@ modes and a driving-safe layout.
 All drivers, places, prices, ratings and conversations in the app are sample data and are labelled
 as such.
 
+## Demo
+
+[`Demonstration/VoiceBridge-Demo.mp4`](Demonstration/VoiceBridge-Demo.mp4) is a 54-second,
+side-by-side walkthrough. Sai, a Hindi-speaking traveller, connects with Ravi Kumar, a
+Tamil-speaking auto driver, plans a day in Chennai and locks the agreement. The left screen shows
+the traveller view and the right screen the driver view, with both sides rendered in Gnani Timbre
+voices.
+
 ## Repository layout
 
 ```
@@ -42,6 +50,7 @@ services/gateway         FastAPI speech gateway
   app/providers          Provider interfaces, live and mock implementations
   tests                  Offline tests and an opt-in live test
 api                      Vercel serverless entry points (TTS and STT)
+Demonstration            Side-by-side demo video
 vercel.json              Vercel build, routing and function configuration
 ```
 
