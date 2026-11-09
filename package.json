@@ -1,0 +1,12 @@
+{
+  "name": "voicebridge",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "dev": "pnpm --filter @voicebridge/web dev",
+    "build": "pnpm --filter @voicebridge/web build",
+    "typecheck": "pnpm --filter @voicebridge/web typecheck",
+    "api": "cd services/gateway && .venv/bin/python -m uvicorn app.main:app --port 8000 --reload",
+    "test:api": "cd services/gateway && .venv/bin/python -m pytest"
+  }
+}
