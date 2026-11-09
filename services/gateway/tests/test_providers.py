@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.errors import ProviderError
-from app.main import create_app
+from app.main import create_app, extract_keys
 from app.providers.gnani import GnaniSTT, GnaniTTS, KeyRing
 from app.providers.mock import MockSTT, MockTTS
 from app.providers.registry import build_stt, build_tts
@@ -179,3 +179,64 @@ def test_gateway_reports_provider_modes() -> None:
     app = create_app(settings=settings(api_keys=(), stt_provider="mock", tts_provider="mock"))
     body = TestClient(app).get("/health").json()
     assert body == {"status": "ok", "providers": {"stt": "mock", "tts": "mock"}}
+
+
+def test_extract_keys_trims_and_limits() -> None:
+    assert extract_keys(" key-a, key-b ,,") == ("key-a", "key-b")
+    assert extract_keys("") == ()
+
+    with pytest.raises(ProviderError) as too_many:
+        extract_keys("a,b,c,d,e")
+    assert too_many.value.code == "INVALID_KEY"
+
+    with pytest.raises(ProviderError) as too_long:
+        extract_keys("x" * 513)
+    assert too_long.value.code == "INVALID_KEY"
+    assert "xxxx" not in too_long.value.message
+
+
+def test_gateway_starts_without_owner_keys_and_asks_for_one() -> None:
+    app = create_app(settings=settings(api_keys=()))
+    client = TestClient(app)
+
+    response = client.post("/api/tts", json={"text": "hello", "lang": "en"})
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "KEY_REQUIRED"
+
+
+def test_gateway_uses_request_scoped_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[tuple[str, ...]] = []
+
+    def fake_provider(_: Settings, keys: tuple[str, ...]) -> MockTTS:
+        seen.append(tuple(keys))
+        return MockTTS()
+
+    monkeypatch.setattr("app.main.build_tts_with_keys", fake_provider)
+    app = create_app(settings=settings(api_keys=()))
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/tts",
+        json={"text": "hello", "lang": "en"},
+        headers={"x-gnani-key": " key-a , key-b "},
+    )
+
+    assert response.status_code == 200
+    assert response.content[:4] == b"RIFF"
+    assert seen == [("key-a", "key-b")]
+
+
+def test_gateway_rejects_invalid_key_header_without_echoing_it() -> None:
+    app = create_app(settings=settings(api_keys=()))
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/tts",
+        json={"text": "hello", "lang": "en"},
+        headers={"x-gnani-key": "secret" * 100},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "INVALID_KEY"
+    assert "secret" not in response.text

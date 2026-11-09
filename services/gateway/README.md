@@ -11,6 +11,12 @@ Server-side proxy for Gnani speech services. The browser never sees `GNANI_API_K
 Both endpoints go through provider interfaces (`app/providers/base.py`). The provider is chosen by
 `PROVIDER_STT` / `PROVIDER_TTS` (`gnani` or `mock`). Mock providers need no network or keys.
 
+Both endpoints also accept an optional `x-gnani-key` header (up to four comma-separated keys). When
+present, the request is served by a Gnani provider bound to those keys for that request only. The
+header is not stored, logged, echoed in errors, or added to the configured key ring. Without the
+header the configured provider is used; if no owner key is configured the response is
+`401 KEY_REQUIRED`.
+
 ## Setup
 
 ```bash
@@ -21,11 +27,13 @@ services/gateway/.venv/bin/pip install -r services/gateway/requirements-dev.txt
 Create `.env` at the repository root (it is gitignored):
 
 ```dotenv
-GNANI_API_KEYS=key-one,key-two
 PROVIDER_STT=gnani
 PROVIDER_TTS=gnani
+GNANI_API_KEYS=key-one,key-two
 CORS_ORIGINS=http://localhost:5179,http://127.0.0.1:5179
 ```
+
+`GNANI_API_KEYS` can be omitted when every request supplies its own key.
 
 `GNANI_API_KEYS` is comma separated. Keys are rotated round-robin and only retried on 401/403/429.
 Keys are never logged, echoed in errors, or returned by any endpoint.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from ..config import Settings
 from ..errors import ProviderError
 from .base import STTProvider, TTSProvider
@@ -27,3 +29,11 @@ def build_tts(settings: Settings) -> TTSProvider:
     if settings.tts_provider == "mock":
         return MockTTS()
     raise ProviderError("CONFIG_ERROR", f"Unknown TTS provider: {settings.tts_provider}.", 500)
+
+
+def build_stt_with_keys(settings: Settings, keys: Sequence[str]) -> STTProvider:
+    return GnaniSTT(KeyRing(keys), settings.base_url, settings.timeout)
+
+
+def build_tts_with_keys(settings: Settings, keys: Sequence[str]) -> TTSProvider:
+    return GnaniTTS(KeyRing(keys), settings.base_url, settings.timeout)

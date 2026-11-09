@@ -22,6 +22,8 @@ modes and a driving-safe layout.
   being built.
 - **Driver tools.** Availability, an incoming request card with a spoken summary, a large
   push-to-talk control, display settings and a voice-first tip recorder.
+- **Bring your own Gnani key.** Visitors can paste their own key in the app and hear live voices
+  without the operator sharing an account.
 - **Installable PWA** with an offline app shell, three languages and light/dark themes.
 
 All drivers, places, prices, ratings and conversations in the app are sample data and are labelled
@@ -51,7 +53,9 @@ vercel.json              Vercel build, routing and function configuration
   `VITE_USE_MOCKS=false` to use a real gateway.
 - `services/gateway` exposes `POST /api/tts` and `POST /api/stt` behind provider interfaces. The
   provider is selected with `PROVIDER_TTS` / `PROVIDER_STT` (`gnani` or `mock`).
-- API keys stay on the server. The browser only calls the gateway; it never receives a provider key.
+- Owner API keys stay on the server. The browser only calls the gateway; it never receives a
+  provider key. A visitor may optionally supply their own key, which is forwarded per request in
+  the `x-gnani-key` header and never stored server-side.
 - On Vercel, `apps/web` is served as a static build and `api/` exposes the same speech endpoints as
   serverless functions.
 
@@ -118,6 +122,22 @@ Root `.env` (server-side, never exposed to the browser):
 Only `VITE_*` values are visible in the browser. Never place `GNANI_API_KEYS` in a `VITE_*`
 variable.
 
+`GNANI_API_KEYS` is optional. When it is absent, the gateway still starts and serves visitors who
+bring their own key; requests without a key receive `401 KEY_REQUIRED`.
+
+## Bring your own Gnani key
+
+The hosted build can be used without an owner-provided key:
+
+1. On the language screen, tap **Hear real Gnani voices** (or the key button in a chat header).
+2. Paste a Gnani API key and optionally test it.
+3. Save it for the tab. The key is kept in `sessionStorage`, so it disappears when the tab closes.
+
+The key is sent to the same-origin gateway only when a voice request is made, forwarded to Gnani,
+and never written to storage on the server, logs, or API responses. Removing the key in the same
+sheet restores the operator-configured provider or the device voice fallback. Up to four
+comma-separated keys can be supplied; they are rotated within that request.
+
 ## Scripts
 
 | Command | What it does |
@@ -142,10 +162,10 @@ The repository is configured for a single Vercel project:
 1. Import the repository in Vercel. Keep the root directory at the repository root; `vercel.json`
    supplies the install command, build command, output directory and routing.
 2. Add these environment variables for Production and Preview:
-   - `GNANI_API_KEYS` — the comma-separated keys (secret)
    - `PROVIDER_STT=gnani`
    - `PROVIDER_TTS=gnani`
    - `GNANI_BASE_URL=https://api.vachana.ai`
+   - `GNANI_API_KEYS` — optional owner keys (secret). Leave it out for a bring-your-own-key demo.
 3. Deploy. The web app is served from `apps/web/dist`, and `api/tts.py` / `api/stt.py` expose the
    speech endpoints at `/api/tts` and `/api/stt` on the same origin.
 4. Set `VITE_USE_MOCKS=true` for the scripted demo, or `false` plus `VITE_WS_URL` when a real-time

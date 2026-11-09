@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ChevronUp,
   Keyboard,
+  KeyRound,
   Mic,
   RefreshCw,
   Send,
@@ -16,6 +17,7 @@ import { MessageBubble } from '../components/chat/MessageBubble'
 import { PlanSheet } from '../components/chat/PlanSheet'
 import { TranscriptionCard } from '../components/chat/TranscriptionCard'
 import { EmptyState } from '../components/EmptyState'
+import { VoiceKeySheet } from '../components/VoiceKeySheet'
 import { ErrorState } from '../components/ErrorState'
 import { Avatar } from '../components/ui/Avatar'
 import { Banner } from '../components/ui/Banner'
@@ -31,6 +33,7 @@ import { createTransport, type ChatTransport } from '../lib/transport'
 import { cn, newId } from '../lib/utils'
 import { useOnlineStatus } from '../lib/useOnlineStatus'
 import { useAppStore } from '../store/appStore'
+import { useVoiceKeyStore } from '../store/voiceKeyStore'
 import type {
   ChatMessage,
   ChatPhase,
@@ -72,8 +75,10 @@ export default function ChatScreen() {
   const [typingMode, setTypingMode] = useState(false)
   const [draft, setDraft] = useState('')
   const [planOpen, setPlanOpen] = useState(false)
+  const [keyOpen, setKeyOpen] = useState(false)
   const [locking, setLocking] = useState(false)
   const [responding, setResponding] = useState(false)
+  const voiceKey = useVoiceKeyStore((state) => state.key)
 
   const transportRef = useRef<ChatTransport | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -322,6 +327,21 @@ export default function ChatScreen() {
       </div>
       <div className="relative">
         <IconButton
+          label={t('voiceKey.title')}
+          variant="surface"
+          onClick={() => setKeyOpen(true)}
+        >
+          <KeyRound aria-hidden className="h-5 w-5" />
+        </IconButton>
+        {voiceKey ? (
+          <span
+            aria-hidden="true"
+            className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-canvas bg-success"
+          />
+        ) : null}
+      </div>
+      <div className="relative">
+        <IconButton
           label={t('chat.viewPlan')}
           variant="surface"
           onClick={() => setPlanOpen(true)}
@@ -559,6 +579,8 @@ export default function ChatScreen() {
           onViewAgreement={() => navigate(`/agreement/${roomId}`)}
         />
       ) : null}
+
+      <VoiceKeySheet open={keyOpen} onClose={() => setKeyOpen(false)} />
     </div>
   )
 }

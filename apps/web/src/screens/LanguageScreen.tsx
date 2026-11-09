@@ -1,11 +1,15 @@
-import { AudioLines, Languages, Moon, Sun } from 'lucide-react'
+import { AudioLines, ChevronRight, KeyRound, Languages, Moon, Sun } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { RoleSwitchButton } from '../components/RoleSwitchButton'
+import { VoiceKeySheet } from '../components/VoiceKeySheet'
 import { LanguagePicker } from '../components/ui/LanguagePicker'
 import { IconButton } from '../components/ui/IconButton'
 import { enterDriverMode } from '../lib/role'
+import { cn } from '../lib/utils'
 import { useAppStore } from '../store/appStore'
+import { useVoiceKeyStore } from '../store/voiceKeyStore'
 import type { LangCode } from '../types'
 
 export default function LanguageScreen() {
@@ -15,6 +19,8 @@ export default function LanguageScreen() {
   const setLanguage = useAppStore((state) => state.setLanguage)
   const theme = useAppStore((state) => state.theme)
   const toggleTheme = useAppStore((state) => state.toggleTheme)
+  const voiceKey = useVoiceKeyStore((state) => state.key)
+  const [keyOpen, setKeyOpen] = useState(false)
 
   const choose = (code: LangCode) => {
     setLanguage(code)
@@ -73,10 +79,39 @@ export default function LanguageScreen() {
           <p className="text-[13px] leading-relaxed text-muted">{t('language.hint')}</p>
         </div>
 
+        <button
+          type="button"
+          onClick={() => setKeyOpen(true)}
+          className="mt-3 flex w-full items-start gap-3 rounded-2xl border border-line bg-surface p-3.5 text-left transition active:scale-[0.99]"
+        >
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-ink">
+            <KeyRound aria-hidden className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="text-[13px] font-semibold">{t('voiceKey.entryTitle')}</span>
+              <span
+                className={cn(
+                  'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                  voiceKey ? 'bg-success-soft text-success' : 'bg-surface2 text-muted',
+                )}
+              >
+                {voiceKey ? t('voiceKey.active') : t('voiceKey.addKey')}
+              </span>
+            </span>
+            <span className="mt-0.5 block text-[12px] leading-relaxed text-muted">
+              {t('voiceKey.entryBody')}
+            </span>
+          </span>
+          <ChevronRight aria-hidden className="mt-2 h-4 w-4 shrink-0 text-muted" />
+        </button>
+
         <div className="mt-auto pt-10">
           <p className="text-center text-[11px] leading-relaxed text-muted">{t('language.privacy')}</p>
         </div>
       </main>
+
+      <VoiceKeySheet open={keyOpen} onClose={() => setKeyOpen(false)} />
     </div>
   )
 }

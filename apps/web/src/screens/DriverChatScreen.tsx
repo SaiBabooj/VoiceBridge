@@ -2,9 +2,11 @@ import {
   ArrowLeft,
   CalendarDays,
   CarFront,
+  ChevronRight,
   Contrast,
   Hourglass,
   Keyboard,
+  KeyRound,
   Mic,
   RefreshCw,
   Send,
@@ -22,6 +24,7 @@ import { PlanSheet } from '../components/chat/PlanSheet'
 import { TranscriptionCard } from '../components/chat/TranscriptionCard'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
+import { VoiceKeySheet } from '../components/VoiceKeySheet'
 import { Avatar } from '../components/ui/Avatar'
 import { Banner } from '../components/ui/Banner'
 import { BottomSheet } from '../components/ui/BottomSheet'
@@ -37,6 +40,7 @@ import { createTransport, type ChatTransport } from '../lib/transport'
 import { cn, newId } from '../lib/utils'
 import { useOnlineStatus } from '../lib/useOnlineStatus'
 import { useAppStore } from '../store/appStore'
+import { useVoiceKeyStore } from '../store/voiceKeyStore'
 import type {
   ChatMessage,
   ChatPhase,
@@ -131,6 +135,8 @@ export default function DriverChatScreen() {
   const [draft, setDraft] = useState('')
   const [planOpen, setPlanOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [keyOpen, setKeyOpen] = useState(false)
+  const voiceKey = useVoiceKeyStore((state) => state.key)
   const [locking, setLocking] = useState(false)
   const [responding, setResponding] = useState(false)
   const [largeText, setLargeText] = useState(() => readFlag(LARGE_TEXT_KEY))
@@ -699,8 +705,37 @@ export default function DriverChatScreen() {
               persist(DRIVING_KEY, next)
             }}
           />
+
+          <button
+            type="button"
+            onClick={() => {
+              setSettingsOpen(false)
+              setKeyOpen(true)
+            }}
+            className="flex w-full items-start gap-3 rounded-2xl border border-line bg-surface p-3.5 text-left"
+          >
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-strong">
+              <KeyRound aria-hidden className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="text-[15px] font-semibold">{t('voiceKey.title')}</span>
+                {voiceKey ? (
+                  <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold text-success">
+                    {t('voiceKey.active')}
+                  </span>
+                ) : null}
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+                {t('voiceKey.subtitle')}
+              </span>
+            </span>
+            <ChevronRight aria-hidden className="mt-2 h-4 w-4 shrink-0 text-muted" />
+          </button>
         </div>
       </BottomSheet>
+
+      <VoiceKeySheet open={keyOpen} onClose={() => setKeyOpen(false)} />
     </div>
   )
 }

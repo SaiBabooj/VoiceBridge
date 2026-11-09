@@ -1,3 +1,4 @@
+import { useVoiceKeyStore } from '../store/voiceKeyStore'
 import type { LangCode } from '../types'
 import { LANGUAGE_MAP } from './languages'
 
@@ -59,9 +60,13 @@ export async function speak(text: string, lang: LangCode, rate = 0.95): Promise<
 
   if (USE_TIMBRE) {
     try {
+      const key = useVoiceKeyStore.getState().key
       const response = await fetch(`${API_URL}/api/tts`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(key ? { 'x-gnani-key': key } : {}),
+        },
         body: JSON.stringify({ text: trimmed, lang }),
       })
       if (id !== requestId) return false
@@ -91,6 +96,36 @@ export async function speak(text: string, lang: LangCode, rate = 0.95): Promise<
   }
 
   return speakBrowser(trimmed, lang, rate)
+}
+
+export interface VoiceKeyCheck {
+  ok: boolean
+  code?: string
+}
+
+export async function verifyVoiceKey(
+  key: string,
+  lang: LangCode,
+  text: string,
+): Promise<VoiceKeyCheck> {
+  try {
+    const response = await fetch(`${API_URL}/api/tts`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-gnani-key': key },
+      body: JSON.stringify({ text, lang }),
+    })
+    if (response.ok) return { ok: true }
+    let code = `HTTP_${response.status}`
+    try {
+      const body = (await response.json()) as { error?: { code?: string } }
+      code = body.error?.code ?? code
+    } catch {
+      /* the status is enough */
+    }
+    return { ok: false, code }
+  } catch {
+    return { ok: false, code: 'UNAVAILABLE' }
+  }
 }
 
 export function stopSpeech(): void {
