@@ -37,6 +37,11 @@ Tamil-speaking auto driver, plans a day in Chennai and locks the agreement. The 
 the traveller view and the right screen the driver view, with both sides rendered in Gnani Timbre
 voices.
 
+## Solution pitch
+
+[`Solution Pitch/README.md`](Solution%20Pitch/README.md) is a one-page walkthrough of the problem,
+the traveller-driver scenario and what is built today.
+
 ## Repository layout
 
 ```
