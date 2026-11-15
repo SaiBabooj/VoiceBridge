@@ -53,6 +53,7 @@ export default function LanguageScreen() {
           </IconButton>
           <RoleSwitchButton
             destination="driver"
+            attention
             onClick={() => {
               enterDriverMode()
               navigate('/driver')

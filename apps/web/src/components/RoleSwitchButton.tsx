@@ -6,10 +6,12 @@ export function RoleSwitchButton({
   destination,
   onClick,
   className,
+  attention = false,
 }: {
   destination: 'traveller' | 'driver'
   onClick: () => void
   className?: string
+  attention?: boolean
 }) {
   const { t } = useTranslation()
   const toDriver = destination === 'driver'
@@ -28,10 +30,19 @@ export function RoleSwitchButton({
     >
       <span
         className={cn(
-          'flex h-8 w-8 items-center justify-center rounded-full',
+          'relative flex h-8 w-8 items-center justify-center rounded-full',
           toDriver ? 'bg-accent text-onaccent' : 'bg-brand-soft text-brand-strong',
         )}
       >
+        {attention ? (
+          <span
+            aria-hidden
+            className={cn(
+              'pointer-events-none absolute inset-0 rounded-full border-2 animate-attention motion-reduce:hidden',
+              toDriver ? 'border-accent' : 'border-brand',
+            )}
+          />
+        ) : null}
         {toDriver ? (
           <CarFront aria-hidden className="h-4 w-4" />
         ) : (

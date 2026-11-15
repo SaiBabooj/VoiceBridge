@@ -78,6 +78,11 @@ module.exports = {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
+        attention: {
+          '0%': { opacity: '0.6', transform: 'scale(1)' },
+          '55%': { opacity: '0', transform: 'scale(1.9)' },
+          '100%': { opacity: '0', transform: 'scale(1.9)' },
+        },
       },
       animation: {
         wave: 'wave 0.9s ease-in-out infinite',
@@ -86,6 +91,7 @@ module.exports = {
         shimmer: 'shimmer 1.6s infinite',
         sheet: 'sheet 0.26s cubic-bezier(0.32, 0.72, 0, 1) both',
         fade: 'fade 0.2s ease-out both',
+        attention: 'attention 3s ease-out infinite',
       },
     },
   },
