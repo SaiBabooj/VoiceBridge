@@ -122,6 +122,7 @@ export default function DriverHomeScreen() {
         </div>
         <RoleSwitchButton
           destination="traveller"
+          attention
           onClick={() => {
             enterTravellerMode()
             navigate('/')

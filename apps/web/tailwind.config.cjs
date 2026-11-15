@@ -91,7 +91,7 @@ module.exports = {
         shimmer: 'shimmer 1.6s infinite',
         sheet: 'sheet 0.26s cubic-bezier(0.32, 0.72, 0, 1) both',
         fade: 'fade 0.2s ease-out both',
-        attention: 'attention 3s ease-out infinite',
+        attention: 'attention 2s ease-out infinite',
       },
     },
   },
